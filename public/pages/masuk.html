@@ -38,7 +38,13 @@
                     id="login_input"
                     placeholder="Masukan nomor Whatsapp disini"
                 />
-                <button type="submit" id="login_btn">
+                <input
+                    type="number"
+                    id="login_otp"
+                    class="login_otp"
+                    placeholder="Masukan kode OTP"
+                />
+                <button class="login_btn" type="submit" id="login_btn">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
@@ -52,6 +58,13 @@
                         /></svg
                     >Kirim OTP
                 </button>
+                <button class="login_btn" type="button" id="login_loading">
+                    Mengirim...
+                </button>
+                <button class="login_btn" type="button" id="login_verify_otp">
+                    Verifikasi OTP
+                </button>
+                <a href="/login" id="refresh"> Kirim ulang OTP </a>
             </div>
         </form>
 

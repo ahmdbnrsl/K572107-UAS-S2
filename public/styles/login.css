@@ -55,7 +55,7 @@ body {
     font-size: 1rem;
 }
 
-#login_input {
+#login_input, #login_otp {
     border: none;
     border-bottom: 1px solid rgba(50, 150, 255, 1);
     outline: none;
@@ -66,14 +66,20 @@ body {
     padding: 1rem;
 }
 
-#login_input::placeholder {
+#login_input::placeholder, #login_otp::placeholder {
     font-size: 0.8rem;
     font-weight: 400;
     color: rgba(150, 150, 150, 1);
     box-sizing: border-box;
 }
 
-#login_btn {
+#login_otp {
+    text-align: center;
+    justify-content: center;
+    display: none;
+}
+
+#login_btn, .login_btn {
     border: none;
     outline: none;
     background-color: rgba(50, 150, 255, 1);
@@ -86,4 +92,20 @@ body {
     justify-content: center;
     gap: 0.5rem;
     cursor: pointer;
+}
+
+#login_loading {
+    display: none;
+}
+
+#login_verify_otp {
+    display: none;
+}
+
+#refresh {
+    display: none;
+    color: rgba(50, 150, 255, 1);
+    font-style: underline;
+    width: 100%;
+    text-align: center;
 }

@@ -8,6 +8,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const crypto_js_1 = __importDefault(require("crypto-js"));
 require("dotenv/config");
 const otp_schema_1 = require(".././schemas/otp.schema");
+const user_schema_1 = require(".././schemas/user.schema");
 /**
  * Configuration
  *
@@ -17,7 +18,8 @@ const MONGODB_CONNECTION_URI = process.env.MONGODB_CONNECTION_URI || "";
 const WA_API_URL = process.env.WA_API_URL || "";
 const WA_API_SECRET = process.env.WA_API_SECRET || "";
 const CRYPTO_KEY = process.env.CRYPTO_KEY || "";
-const model = mongoose_1.default.models.otps || mongoose_1.default.model("otps", otp_schema_1.otpSchema);
+const otpModel = mongoose_1.default.models.otps || mongoose_1.default.model("otps", otp_schema_1.otpSchema);
+const userModel = mongoose_1.default.models.users || mongoose_1.default.model("users", user_schema_1.userSchema);
 /**
  * Functions
  *
@@ -91,14 +93,14 @@ const sendAndStoreOTP = async (params) => {
     const { wa_number, created_at, expired_at } = params;
     try {
         await mongoose_1.default.connect(MONGODB_CONNECTION_URI);
-        const checkExistingNumber = await model.findOne({ wa_number });
+        const checkExistingNumber = await otpModel.findOne({ wa_number });
         const OTPCode = generateOTP();
         const sendOTPCode = await sendOTP(wa_number, OTPCode);
         if (!sendOTPCode)
             return false;
         if (checkExistingNumber)
-            await model.deleteOne({ wa_number });
-        const result = await model.create({
+            await otpModel.deleteOne({ wa_number });
+        const result = await otpModel.create({
             wa_number,
             otp_code: crypto_js_1.default.AES.encrypt(OTPCode, CRYPTO_KEY).toString(),
             created_at,
@@ -119,7 +121,7 @@ const verifyOTP = async (params) => {
     const { wa_number, otp_code, now } = params;
     try {
         await mongoose_1.default.connect(MONGODB_CONNECTION_URI);
-        const otp = await model.findOne({ wa_number });
+        const otp = await otpModel.findOne({ wa_number });
         if (!otp)
             return false;
         if (otp.expired_at < now)
@@ -127,7 +129,10 @@ const verifyOTP = async (params) => {
         const compare = crypto_js_1.default.AES.decrypt(otp.otp_code, CRYPTO_KEY).toString(crypto_js_1.default.enc.Utf8) === otp_code;
         if (!compare)
             return false;
-        await model.deleteOne({ wa_number });
+        await otpModel.deleteOne({ wa_number });
+        const user = await userModel.findOne({ wa_number });
+        if (!user)
+            await userModel.create({ wa_number });
         return {
             wa_number,
             serial_id: otp_code

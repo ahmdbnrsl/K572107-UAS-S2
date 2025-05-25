@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import CryptoJS from "crypto-js";
 import "dotenv/config";
 import { otpSchema } from ".././schemas/otp.schema";
+import { userSchema } from ".././schemas/user.schema";
 /**
  * Interfaces
  *
@@ -12,6 +13,17 @@ interface ISendAndStoreOTPParams {
     created_at: number;
     expired_at: number;
 }
+
+interface IVerifyOTPParams {
+    wa_number: string;
+    otp_code: string;
+    now: number;
+}
+
+interface IResultLogin {
+    wa_number: string;
+    serial_id: string;
+}
 /**
  * Configuration
  *
@@ -21,7 +33,8 @@ const MONGODB_CONNECTION_URI = process.env.MONGODB_CONNECTION_URI || "";
 const WA_API_URL = process.env.WA_API_URL || "";
 const WA_API_SECRET = process.env.WA_API_SECRET || "";
 const CRYPTO_KEY = process.env.CRYPTO_KEY || "";
-const model = mongoose.models.otps || mongoose.model("otps", otpSchema);
+const otpModel = mongoose.models.otps || mongoose.model("otps", otpSchema);
+const userModel = mongoose.models.users || mongoose.model("users", userSchema);
 /**
  * Functions
  *
@@ -101,20 +114,53 @@ export const sendAndStoreOTP = async (
     try {
         await mongoose.connect(MONGODB_CONNECTION_URI);
 
-        const checkExistingNumber = await model.findOne({ wa_number });
+        const checkExistingNumber = await otpModel.findOne({ wa_number });
 
         const OTPCode = generateOTP();
-        const sendOTPCode = sendOTP(wa_number, OTPCode);
+        const sendOTPCode = await sendOTP(wa_number, OTPCode);
 
         if (!sendOTPCode) return false;
-        if (checkExistingNumber) await model.deleteOne({ wa_number });
-        const result = await model.create({
+        if (checkExistingNumber) await otpModel.deleteOne({ wa_number });
+        const result = await otpModel.create({
             wa_number,
             otp_code: CryptoJS.AES.encrypt(OTPCode, CRYPTO_KEY).toString(),
             created_at,
             expired_at
         });
+
         return true;
+    } catch (error) {
+        console.error(error);
+        return false;
+    } finally {
+        await mongoose.connection.close();
+    }
+};
+
+export const verifyOTP = async (
+    params: IVerifyOTPParams
+): Promise<IResultLogin | false> => {
+    const { wa_number, otp_code, now } = params;
+
+    try {
+        await mongoose.connect(MONGODB_CONNECTION_URI);
+        const otp = await otpModel.findOne({ wa_number });
+
+        if (!otp) return false;
+        if (otp.expired_at < now) return false;
+        const compare =
+            CryptoJS.AES.decrypt(otp.otp_code, CRYPTO_KEY).toString(
+                CryptoJS.enc.Utf8
+            ) === otp_code;
+        if (!compare) return false;
+        await otpModel.deleteOne({ wa_number });
+
+        const user = await userModel.findOne({ wa_number });
+        if (!user) await userModel.create({ wa_number });
+        return {
+            wa_number,
+            serial_id: otp_code
+        };
     } catch (error) {
         console.error(error);
         return false;
