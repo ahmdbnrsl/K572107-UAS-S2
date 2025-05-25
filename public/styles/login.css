@@ -1,0 +1,89 @@
+body {
+    background-color: rgba(248, 248, 248, 1);
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    padding: 1.2rem;
+    box-sizing: border-box;
+    justify-content: center;
+    align-items: center;
+}
+
+#login_form {
+    width: 100%;
+    max-width: 600px;
+    background-color: rgba(252, 252, 252, 1);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    align-items: center;
+}
+
+#login_header {
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid rgba(230, 230, 230, 1);
+    box-sizing: border-box;
+    width: 100%;
+}
+
+#login_title {
+    color: rgba(50, 150, 255, 1);
+    font-weight: 800;
+    letter-spacing: 0.2rem;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+#login_body {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 2.5rem 1rem;
+    gap: 1rem;
+    box-sizing: border-box;
+}
+
+#login_subtitle {
+    color: rgba(100, 100, 100, 1);
+    font-size: 1rem;
+}
+
+#login_input {
+    border: none;
+    border-bottom: 1px solid rgba(50, 150, 255, 1);
+    outline: none;
+    background-color: transparent;
+    color: rgba(50, 150, 255, 1);
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding: 1rem;
+}
+
+#login_input::placeholder {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: rgba(150, 150, 150, 1);
+    box-sizing: border-box;
+}
+
+#login_btn {
+    border: none;
+    outline: none;
+    background-color: rgba(50, 150, 255, 1);
+    border-radius: 0.3rem;
+    color: rgba(252, 252, 252, 1);
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
