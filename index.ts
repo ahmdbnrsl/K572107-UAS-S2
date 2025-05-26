@@ -89,14 +89,14 @@ app.post("/api/login", async (req, res) => {
         const token = jwt.sign(
             { wa_number: result.wa_number, serial_id: result.serial_id },
             JWT_KEY,
-            { expiresIn: "1h" }
+            { expiresIn: "30d" }
         );
 
         res.cookie("token", token, {
             httpOnly: true,
             secure: false,
             sameSite: "strict",
-            maxAge: 60 * 60 * 1000
+            maxAge: 30 * 24 * 60 * 60 * 1000
         });
 
         res.status(200).json({

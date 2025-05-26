@@ -70,12 +70,12 @@ app.post("/api/login", async (req, res) => {
     params.now = Number(params.now);
     const result = await (0, auth_controller_1.verifyOTP)(params);
     if (result) {
-        const token = jsonwebtoken_1.default.sign({ wa_number: result.wa_number, serial_id: result.serial_id }, JWT_KEY, { expiresIn: "1h" });
+        const token = jsonwebtoken_1.default.sign({ wa_number: result.wa_number, serial_id: result.serial_id }, JWT_KEY, { expiresIn: "30d" });
         res.cookie("token", token, {
             httpOnly: true,
             secure: false,
             sameSite: "strict",
-            maxAge: 60 * 60 * 1000
+            maxAge: 30 * 24 * 60 * 60 * 1000
         });
         res.status(200).json({
             status: true,

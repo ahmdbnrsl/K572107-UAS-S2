@@ -3,9 +3,127 @@
     <head>
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href=".././styles/reset.css" />
+        <link rel="stylesheet" href=".././styles/beranda.css" />
+        <link rel="stylesheet" href=".././styles/font.css" />
         <title></title>
     </head>
     <body>
-        HOME
+        <nav id="navigation_home">
+            <h1 id="kontak_title">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-video-icon lucide-video"
+                >
+                    <path
+                        d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"
+                    />
+                    <rect x="2" y="6" width="14" height="12" rx="2" /></svg
+                >TemuBatir
+            </h1>
+            <div id="search_box">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-search-icon lucide-search"
+                >
+                    <path d="m21 21-4.34-4.34" />
+                    <circle cx="11" cy="11" r="8" />
+                </svg>
+                <input
+                    placeholder="Cari kontak"
+                    type="text"
+                    id="input_search"
+                />
+            </div>
+        </nav>
+        <div id="home_page">
+            <div id="contact_card">
+                <div class="contact_card">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-user-icon lucide-user"
+                    >
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    <div id="info_contact">
+                        <p id="contact_name">Dikram Mubarok</p>
+                        <p id="contact_number">088216018165</p>
+                    </div>
+                </div>
+                <div class="action_contact">
+                    <button id="call_contact">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-video-icon lucide-video"
+                        >
+                            <path
+                                d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"
+                            />
+                            <rect
+                                x="2"
+                                y="6"
+                                width="14"
+                                height="12"
+                                rx="2"
+                            /></svg
+                        >Panggil</button
+                    ><button id="del_contact">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-trash-icon lucide-trash"
+                        >
+                            <path d="M3 6h18" />
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg
+                        >Hapus
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="add_contact">
+            <button id="add_contact_btn">+ Tambah Kontak</button>
+        </div>
+        <script src=".././scripts/login.js"></script>
     </body>
 </html>
