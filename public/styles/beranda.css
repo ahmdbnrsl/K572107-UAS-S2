@@ -5,6 +5,7 @@ body {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    position: relative;
 }
 
 #navigation_home {
@@ -17,6 +18,7 @@ body {
     position: fixed;
     top: 0;
     flex-direction: column;
+    z-index: 999;
 }
 
 #search_box {
@@ -48,7 +50,7 @@ body {
     font-weight: 500;
 }
 
-#kontak_title {
+#kontak_title, #title_add_contact {
     color: rgba(50, 150, 255, 1);
     align-items: center;
     display: flex;
@@ -66,7 +68,27 @@ body {
     box-sizing: border-box;
 }
 
-#contact_card, .contact_card, .action_contact {
+#contacts_loading, #contacts_empty {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: rgba(100, 100, 100, 1);
+    display: flex;
+    width: 100%;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+#contacts_empty {
+    display: none;
+}
+
+.lucide-loader {
+    animation: spin 2.5s linear infinite;
+}
+
+.contact_card, .info_contact_wrap, .action_contact {
     box-sizing: border-box;
     width: 100%;
     display: flex;
@@ -78,7 +100,7 @@ body {
     justify-content: center;
 }
 
-#contact_card {
+.contact_card {
     border-radius: 0.5rem;
     padding: 1rem;
     display: flex;
@@ -87,7 +109,7 @@ body {
     flex-direction: column;
 }
 
-#contact_name {
+.contact_name {
     white-space: nowrap;
     overflow: hidden;
     max-width: 15ch;
@@ -96,17 +118,17 @@ body {
     font-weight: 700;
 }
 
-#contact_number {
+.contact_number {
     font-size: 0.8rem;
     color: rgba(100, 100, 100, 1);
     margin-top: 0.4rem;
 }
 
-#info_contact {
+.info_contact {
     flex-grow: 3;
 }
 
-#call_contact, #del_contact {
+.call_contact, .del_contact {
     display: flex;
     align-items: center;
     background-color: rgba(50, 150, 255, 1);
@@ -120,7 +142,7 @@ body {
     gap: 0.5rem;
 }
 
-#del_contact {
+.del_contact {
     background-color: rgba(255, 50, 50, 1);
 }
 
@@ -144,4 +166,90 @@ body {
     outline: none;
     font-size: 1.2rem;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    z-index: 999;
+}
+
+.form_add_contact {
+    inset: 0;
+    position: absolute;
+    backdrop-filter: blur(2px);
+    background-color: transparent;
+    z-index: 9999;
+    padding: 1.2rem;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#form_add_contact {
+    width: 100%;
+    max-width: 600px;
+    background-color: rgba(252, 252, 252, 1);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    align-items: center;
+    height: fit-content;
+    padding: 1.2rem;
+    gap: 1rem;
+}
+
+#add_contact_error {
+    text-align: center;
+    margin-top: 0.5rem;
+    color: red;
+}
+
+#name_add, #wa_number_add {
+    width: 100%;
+    outline: none;
+    border: 2px solid rgba(230, 230, 230, 1);
+    border-radius: 0.2rem;
+    padding: 0.8rem 2rem;
+    box-sizing: border-box;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+#name_add::placeholder, #wa_number_add::placeholder {
+    font-weight: 500;
+}
+
+#submit_add_contact, .submit_add_contact, #close_add_contact {
+    border: none;
+    outline: none;
+    background-color: rgba(50, 150, 255, 1);
+    border-radius: 0.3rem;
+    color: rgba(252, 252, 252, 1);
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.submit_add_contact {
+    display: none;
+}
+
+#close_add_contact {
+    background-color: rgba(252, 252, 252, 1);
+    color: rgba(100, 100, 100, 1);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.is_hidden {
+    display: none;
 }

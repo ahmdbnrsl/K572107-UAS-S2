@@ -1,4 +1,4 @@
-import exp from "express";
+import exp, { Request } from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import { authMiddleware } from "./middlewares/auth.middleware";
 /** controller **/
 import { sendAndStoreOTP, verifyOTP } from "./controllers/auth.controller";
+import { getAllContacts, addContact } from "./controllers/contact.controller";
 /**
  * Interface
  *
@@ -21,6 +22,10 @@ interface IVerifyOTPParams {
     wa_number: string;
     otp_code: string;
     now: number;
+}
+
+interface Req extends Request {
+    user: { wa_number: string; serial_id: string };
 }
 /**
  * Init and Configuration
@@ -57,6 +62,7 @@ app.get("/:page", authMiddleware, (req, res) => {
  *
  *
  **/
+/*Authentication API*/
 app.post("/api/sendotp", async (req, res) => {
     console.log("POST API /api/sendotp ...");
     const params: ISendAndStoreOTPParams = req.body;
@@ -109,6 +115,48 @@ app.post("/api/login", async (req, res) => {
             status: true,
             code: 500,
             message: "Internal server error"
+        });
+    }
+});
+/*Contact API*/
+app.get("/api/contacts", authMiddleware, async (req, res) => {
+    console.log("POST API /api/contacts ...");
+    const wa_number = (req as Req).user.wa_number;
+    const contacts = await getAllContacts(wa_number);
+
+    if (contacts) {
+        res.json({
+            status: true,
+            code: 200,
+            message: "Berhasil mendapatkan data kontak",
+            contacts
+        });
+    } else {
+        res.status(500).json({
+            status: false,
+            code: 500,
+            message: "Interval server error"
+        });
+    }
+});
+
+app.post("/api/addcontact", authMiddleware, async (req, res) => {
+    console.log("POST API /api/addcontact ...");
+    const params = req.body;
+    params.wa_number = (req as Req).user.wa_number;
+
+    const add = await addContact(params);
+    if (add) {
+        res.status(200).json({
+            status: true,
+            code: 200,
+            message: "Berhasil menambahkan kontak"
+        });
+    } else {
+        res.status(400).json({
+            status: false,
+            code: 400,
+            message: "Kontak sudah ditambahkan sebelumnya"
         });
     }
 });

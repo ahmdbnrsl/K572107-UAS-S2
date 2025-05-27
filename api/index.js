@@ -11,6 +11,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const auth_middleware_1 = require("./middlewares/auth.middleware");
 /** controller **/
 const auth_controller_1 = require("./controllers/auth.controller");
+const contact_controller_1 = require("./controllers/contact.controller");
 /**
  * Init and Configuration
  *
@@ -43,6 +44,7 @@ app.get("/:page", auth_middleware_1.authMiddleware, (req, res) => {
  *
  *
  **/
+/*Authentication API*/
 app.post("/api/sendotp", async (req, res) => {
     console.log("POST API /api/sendotp ...");
     const params = req.body;
@@ -88,6 +90,47 @@ app.post("/api/login", async (req, res) => {
             status: true,
             code: 500,
             message: "Internal server error"
+        });
+    }
+});
+/*Contact API*/
+app.get("/api/contacts", auth_middleware_1.authMiddleware, async (req, res) => {
+    console.log("POST API /api/contacts ...");
+    const wa_number = req.user.wa_number;
+    const contacts = await (0, contact_controller_1.getAllContacts)(wa_number);
+    if (contacts) {
+        res.json({
+            status: true,
+            code: 200,
+            message: "Berhasil mendapatkan data kontak",
+            contacts
+        });
+    }
+    else {
+        res.status(500).json({
+            status: false,
+            code: 500,
+            message: "Interval server error"
+        });
+    }
+});
+app.post("/api/addcontact", auth_middleware_1.authMiddleware, async (req, res) => {
+    console.log("POST API /api/addcontact ...");
+    const params = req.body;
+    params.wa_number = req.user.wa_number;
+    const add = await (0, contact_controller_1.addContact)(params);
+    if (add) {
+        res.status(200).json({
+            status: true,
+            code: 200,
+            message: "Berhasil menambahkan kontak"
+        });
+    }
+    else {
+        res.status(400).json({
+            status: false,
+            code: 400,
+            message: "Kontak sudah ditambahkan sebelumnya"
         });
     }
 });
