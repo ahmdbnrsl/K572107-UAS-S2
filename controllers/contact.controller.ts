@@ -9,10 +9,11 @@ import { userSchema } from ".././schemas/user.schema";
 interface IContact {
     wa_number: string;
     save: string;
-    as_name: string;
+    as_name?: string;
 }
 
 interface IParamsAddContact extends IContact {}
+interface IParamsDelContact extends IContact {}
 interface IUser {
     wa_number: string;
 }
@@ -66,6 +67,27 @@ export const addContact = async (
 
         await contactModel.create(params);
         return true;
+    } catch (error) {
+        console.error(error);
+        return false;
+    } finally {
+        await mongoose.connection.close();
+    }
+};
+
+export const deleteContact = async (
+    params: IParamsDelContact
+): Promise<boolean> => {
+    const { save, wa_number } = params;
+    try {
+        await mongoose.connect(MONGODB_CONNECTION_URI);
+        const delContact = await contactModel.deleteOne({
+            wa_number,
+            save
+        });
+        if (delContact.acknowledged && delContact.deletedCount == 1)
+            return true;
+        return false;
     } catch (error) {
         console.error(error);
         return false;

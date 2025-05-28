@@ -134,6 +134,26 @@ app.post("/api/addcontact", auth_middleware_1.authMiddleware, async (req, res) =
         });
     }
 });
+app.delete("/api/deletecontact", auth_middleware_1.authMiddleware, async (req, res) => {
+    console.log("POST API /api/deletecontact ...");
+    const params = req.body;
+    params.wa_number = req.user.wa_number;
+    const del = await (0, contact_controller_1.deleteContact)(params);
+    if (del) {
+        res.status(200).json({
+            status: true,
+            code: 200,
+            message: "Berhasil menghapus kontak"
+        });
+    }
+    else {
+        res.status(400).json({
+            status: false,
+            code: 400,
+            message: "Kontak tidak ada"
+        });
+    }
+});
 app.use((req, res, next) => {
     res.status(404).json({
         status: false,

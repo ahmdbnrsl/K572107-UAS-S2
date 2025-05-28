@@ -169,7 +169,7 @@ body {
     z-index: 999;
 }
 
-.form_add_contact {
+.form_add_contact, .wrap_pop_up_confirm_del_contact {
     inset: 0;
     position: absolute;
     backdrop-filter: blur(2px);
@@ -182,7 +182,7 @@ body {
     align-items: center;
 }
 
-#form_add_contact {
+#form_add_contact, #pop_up_confirm_del_contact {
     width: 100%;
     max-width: 600px;
     background-color: rgba(252, 252, 252, 1);
@@ -197,10 +197,11 @@ body {
     gap: 1rem;
 }
 
-#add_contact_error {
+#add_contact_error, #del_contact_error {
     text-align: center;
     margin-top: 0.5rem;
     color: red;
+    display: none;
 }
 
 #name_add, #wa_number_add {
@@ -218,7 +219,7 @@ body {
     font-weight: 500;
 }
 
-#submit_add_contact, .submit_add_contact, #close_add_contact {
+#submit_add_contact, .submit_add_contact, #close_add_contact, #submit_del_contact, .submit_del_contact, #loading_del_contact, #close_del_contact {
     border: none;
     outline: none;
     background-color: rgba(50, 150, 255, 1);
@@ -235,11 +236,15 @@ body {
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
-.submit_add_contact {
+#loading_del_contact, #submit_del_contact {
+    background-color: rgba(255, 50, 50, 1);
+}
+
+.submit_add_contact, #loading_del_contact { 
     display: none;
 }
 
-#close_add_contact {
+#close_add_contact, #close_del_contact {
     background-color: rgba(252, 252, 252, 1);
     color: rgba(100, 100, 100, 1);
 }

@@ -6,7 +6,11 @@ import jwt from "jsonwebtoken";
 import { authMiddleware } from "./middlewares/auth.middleware";
 /** controller **/
 import { sendAndStoreOTP, verifyOTP } from "./controllers/auth.controller";
-import { getAllContacts, addContact } from "./controllers/contact.controller";
+import {
+    getAllContacts,
+    addContact,
+    deleteContact
+} from "./controllers/contact.controller";
 /**
  * Interface
  *
@@ -157,6 +161,27 @@ app.post("/api/addcontact", authMiddleware, async (req, res) => {
             status: false,
             code: 400,
             message: "Kontak sudah ditambahkan sebelumnya"
+        });
+    }
+});
+
+app.delete("/api/deletecontact", authMiddleware, async (req, res) => {
+    console.log("POST API /api/deletecontact ...");
+    const params = req.body;
+    params.wa_number = (req as Req).user.wa_number;
+
+    const del = await deleteContact(params);
+    if (del) {
+        res.status(200).json({
+            status: true,
+            code: 200,
+            message: "Berhasil menghapus kontak"
+        });
+    } else {
+        res.status(400).json({
+            status: false,
+            code: 400,
+            message: "Kontak tidak ada"
         });
     }
 });

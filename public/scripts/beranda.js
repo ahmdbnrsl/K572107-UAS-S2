@@ -1,3 +1,4 @@
+let currentSave = null;
 window.addEventListener("load", async e => {
     const response = await fetch("/api/contacts", {
         method: "GET",
@@ -61,7 +62,7 @@ window.addEventListener("load", async e => {
                                 rx="2"
                             /></svg
                         >Panggil</button
-                    ><button class="del_contact">
+                    ><button class="del_contact" onclick="toggleConfirmator('${e.save}')">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="20"
@@ -126,5 +127,46 @@ form_add_contact.addEventListener("submit", async e => {
         add_contact_error.innerText =
             "Kontak sudah ditambahkan atau kontak tidak terdaftar di sistem atau server error";
         add_contact_error.style.display = "flex";
+    }
+});
+
+const toggleConfirmator = (...args) => {
+    if (typeof args[0] === "string") {
+        currentSave = args[0];
+    } else {
+        currentSave = null;
+    }
+    wrap_pop_up_confirm_del_contact.classList.toggle("is_hidden");
+};
+
+close_del_contact.addEventListener("click", toggleConfirmator);
+
+submit_del_contact.addEventListener("click", async e => {
+    e.preventDefault();
+    if (!currentSave) return;
+
+    loading_del_contact.style.display = "flex";
+    submit_del_contact.style.display = "none";
+    del_contact_error.style.display = "none";
+
+    const response = await fetch("/api/deletecontact", {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            save: currentSave
+        })
+    });
+
+    loading_del_contact.style.display = "none";
+    submit_del_contact.style.display = "flex";
+
+    if (response.ok) {
+        wrap_pop_up_confirm_del_contact.classList.toggle("is_hidden");
+        window.location.reload();
+    } else {
+        del_contact_error.innerText = "Gagal menghapus kontak";
+        del_contact_error.style.display = "flex";
     }
 });
