@@ -1,8 +1,16 @@
 import jwt from "jsonwebtoken";
 import "dotenv/config";
-
+/**
+ * Configuration
+ *
+ *
+ **/
 const JWT_KEY = process.env.JWT_KEY || "";
-
+/**
+ * Middleware
+ *
+ *
+ **/
 export function authMiddleware(req: any, res: any, next: any) {
     const token = req.cookies.token;
     const path = req.path;

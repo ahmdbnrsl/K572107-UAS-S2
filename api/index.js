@@ -7,17 +7,24 @@ const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const http_1 = __importDefault(require("http"));
+const socket_io_1 = require("socket.io");
 /** middleware **/
 const auth_middleware_1 = require("./middlewares/auth.middleware");
+const socket_middleware_1 = require("./middlewares/socket.middleware");
 /** controller **/
 const auth_controller_1 = require("./controllers/auth.controller");
 const contact_controller_1 = require("./controllers/contact.controller");
+const users_controller_1 = require("./controllers/users.controller");
 /**
  * Init and Configuration
  *
  *
  **/
 const app = (0, express_1.default)();
+const server = http_1.default.createServer(app);
+const IO = new socket_io_1.Server(server);
+const users = new Map();
 const JWT_KEY = process.env.JWT_KEY || "";
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
@@ -28,7 +35,7 @@ app.use(express_1.default.static(path_1.default.join(process.cwd(), "public")));
  *
  *
  **/
-app.get("/:page", auth_middleware_1.authMiddleware, (req, res) => {
+app.get("/:page", auth_middleware_1.authMiddleware, async (req, res) => {
     const listPage = ["masuk", "beranda"];
     const params = req.params.page;
     if (listPage.includes(params)) {
@@ -37,6 +44,20 @@ app.get("/:page", auth_middleware_1.authMiddleware, (req, res) => {
     }
     else {
         res.sendFile(path_1.default.join(process.cwd(), "public/pages", `404.html`));
+    }
+});
+app.get("/panggilan/:wanumber", async (req, res) => {
+    const wa_number = req.params.wanumber;
+    if (!wa_number) {
+        res.sendFile(path_1.default.join(process.cwd(), "public/pages", `404.html`));
+    }
+    else {
+        const checkExist = await (0, users_controller_1.checkIfUserExist)(wa_number);
+        if (!checkExist) {
+            res.sendFile(path_1.default.join(process.cwd(), "public/pages", `404.html`));
+        }
+        else
+            res.sendFile(path_1.default.join(process.cwd(), "public/pages", `panggilan.html`));
     }
 });
 /**
@@ -161,6 +182,23 @@ app.use((req, res, next) => {
         message: "Not Found"
     });
 });
-app.listen(8000, () => {
+/**
+ * Socket handler
+ *
+ *
+ **/
+const userInCallEvent = new Map();
+const targetCall = new Map();
+IO.use(socket_middleware_1.socketMiddleware);
+IO.on("connection", socket => {
+    socket.on("join", target => {
+        userInCallEvent.set(socket.id, socket.wa_number);
+        console.log(target);
+    });
+    socket.on("disconnect", () => {
+        userInCallEvent.delete(socket.id);
+    });
+});
+server.listen(8000, () => {
     console.log("app is running...");
 });

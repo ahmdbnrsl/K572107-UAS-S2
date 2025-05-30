@@ -2,8 +2,11 @@ import exp, { Request } from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
+import http from "http";
+import { Server, type Socket } from "socket.io";
 /** middleware **/
 import { authMiddleware } from "./middlewares/auth.middleware";
+import { socketMiddleware } from "./middlewares/socket.middleware";
 /** controller **/
 import { sendAndStoreOTP, verifyOTP } from "./controllers/auth.controller";
 import {
@@ -11,6 +14,7 @@ import {
     addContact,
     deleteContact
 } from "./controllers/contact.controller";
+import { checkIfUserExist } from "./controllers/users.controller";
 /**
  * Interface
  *
@@ -31,12 +35,21 @@ interface IVerifyOTPParams {
 interface Req extends Request {
     user: { wa_number: string; serial_id: string };
 }
+
+declare module "socket.io" {
+    interface Socket {
+        wa_number?: string;
+    }
+}
 /**
  * Init and Configuration
  *
  *
  **/
 const app = exp();
+const server = http.createServer(app);
+const IO = new Server(server);
+const users = new Map();
 const JWT_KEY = process.env.JWT_KEY || "";
 app.use(exp.json());
 app.use(cookieParser());
@@ -47,9 +60,10 @@ app.use(exp.static(path.join(process.cwd(), "public")));
  *
  *
  **/
-app.get("/:page", authMiddleware, (req, res) => {
+app.get("/:page", authMiddleware, async (req, res) => {
     const listPage = ["masuk", "beranda"];
     const params = req.params.page;
+
     if (listPage.includes(params)) {
         const pathFile = path.join(
             process.cwd(),
@@ -59,6 +73,21 @@ app.get("/:page", authMiddleware, (req, res) => {
         res.sendFile(pathFile);
     } else {
         res.sendFile(path.join(process.cwd(), "public/pages", `404.html`));
+    }
+});
+
+app.get("/panggilan/:wanumber", async (req, res) => {
+    const wa_number = req.params.wanumber;
+    if (!wa_number) {
+        res.sendFile(path.join(process.cwd(), "public/pages", `404.html`));
+    } else {
+        const checkExist = await checkIfUserExist(wa_number);
+        if (!checkExist) {
+            res.sendFile(path.join(process.cwd(), "public/pages", `404.html`));
+        } else
+            res.sendFile(
+                path.join(process.cwd(), "public/pages", `panggilan.html`)
+            );
     }
 });
 /**
@@ -194,6 +223,26 @@ app.use((req, res, next) => {
     });
 });
 
-app.listen(8000, () => {
+/**
+ * Socket handler
+ *
+ *
+ **/
+const userInCallEvent = new Map();
+const targetCall = new Map();
+
+IO.use(socketMiddleware);
+IO.on("connection", socket => {
+    socket.on("join", target => {
+        userInCallEvent.set(socket.id, socket.wa_number);
+        console.log(target);
+    });
+
+    socket.on("disconnect", () => {
+        userInCallEvent.delete(socket.id);
+    });
+});
+
+server.listen(8000, () => {
     console.log("app is running...");
 });

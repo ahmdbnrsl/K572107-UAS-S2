@@ -6,7 +6,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.authMiddleware = authMiddleware;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 require("dotenv/config");
+/**
+ * Configuration
+ *
+ *
+ **/
 const JWT_KEY = process.env.JWT_KEY || "";
+/**
+ * Middleware
+ *
+ *
+ **/
 function authMiddleware(req, res, next) {
     const token = req.cookies.token;
     const path = req.path;

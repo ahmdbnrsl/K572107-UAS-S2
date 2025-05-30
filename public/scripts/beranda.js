@@ -38,7 +38,7 @@ window.addEventListener("load", async e => {
                     </div>
                 </div>
                 <div class="action_contact">
-                    <button class="call_contact">
+                    <button class="call_contact" onClick="startCall('${e.save}')">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="20"
@@ -137,6 +137,12 @@ const toggleConfirmator = (...args) => {
         currentSave = null;
     }
     wrap_pop_up_confirm_del_contact.classList.toggle("is_hidden");
+};
+
+const startCall = (...args) => {
+    if (typeof args[0] === "string") {
+        window.location.href = "/panggilan/" + args[0];
+    }
 };
 
 close_del_contact.addEventListener("click", toggleConfirmator);
