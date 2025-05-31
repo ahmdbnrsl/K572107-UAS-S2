@@ -8,6 +8,21 @@ body {
     position: relative;
 }
 
+#call_title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#action_call {
+    display: flex;
+    margin-top: 1.5rem;
+    gap: 1rem;
+    justify-content: center;
+}
+
 #navigation_home {
     box-sizing: border-box;
     width: 100%;
@@ -128,7 +143,7 @@ body {
     flex-grow: 3;
 }
 
-.call_contact, .del_contact {
+.call_contact, .del_contact, #accept_call, #reject_call {
     display: flex;
     align-items: center;
     background-color: rgba(50, 150, 255, 1);
@@ -142,8 +157,13 @@ body {
     gap: 0.5rem;
 }
 
-.del_contact {
+.del_contact, #reject_call {
     background-color: rgba(255, 50, 50, 1);
+}
+
+#accept_call {
+    background-color: rgba(50, 255, 150, 1);
+    color: rgba(80, 80, 80, 1);
 }
 
 #add_contact {
@@ -169,7 +189,7 @@ body {
     z-index: 999;
 }
 
-.form_add_contact, .wrap_pop_up_confirm_del_contact {
+.form_add_contact, .wrap_pop_up_confirm_del_contact, .wrap-popup-call {
     inset: 0;
     position: absolute;
     backdrop-filter: blur(2px);
@@ -180,6 +200,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.wrap-popup-call {
+    backdrop-filter: blur(6px);
+    background-color: rgba(255, 255, 255, .7);
+    display: none;
 }
 
 #form_add_contact, #pop_up_confirm_del_contact {

@@ -10,6 +10,7 @@ import { socketMiddleware } from "./middlewares/socket.middleware";
 /** controller **/
 import { sendAndStoreOTP, verifyOTP } from "./controllers/auth.controller";
 import {
+    getContactInfo,
     getAllContacts,
     addContact,
     deleteContact
@@ -152,8 +153,30 @@ app.post("/api/login", async (req, res) => {
     }
 });
 /*Contact API*/
+app.post("/api/contactinfo", authMiddleware, async (req, res) => {
+    console.log("POST API /api/contactinfo ...");
+    const params = req.body;
+    params.wa_number = (req as Req).user.wa_number;
+    const contactInfo = await getContactInfo(params);
+
+    if (contactInfo) {
+        res.json({
+            status: true,
+            code: 200,
+            message: "Berhasil mendapatkan data kontak",
+            contactInfo
+        });
+    } else {
+        res.status(500).json({
+            status: false,
+            code: 500,
+            message: "Interval server error"
+        });
+    }
+});
+
 app.get("/api/contacts", authMiddleware, async (req, res) => {
-    console.log("POST API /api/contacts ...");
+    console.log("GET API /api/contacts ...");
     const wa_number = (req as Req).user.wa_number;
     const contacts = await getAllContacts(wa_number);
 
@@ -195,7 +218,7 @@ app.post("/api/addcontact", authMiddleware, async (req, res) => {
 });
 
 app.delete("/api/deletecontact", authMiddleware, async (req, res) => {
-    console.log("POST API /api/deletecontact ...");
+    console.log("DELETE API /api/deletecontact ...");
     const params = req.body;
     params.wa_number = (req as Req).user.wa_number;
 
@@ -228,18 +251,39 @@ app.use((req, res, next) => {
  *
  *
  **/
+
+const userOnline = new Map();
 const userInCallEvent = new Map();
-const targetCall = new Map();
 
 IO.use(socketMiddleware);
 IO.on("connection", socket => {
-    socket.on("join", target => {
-        userInCallEvent.set(socket.id, socket.wa_number);
-        console.log(target);
+    socket.on("join", () => {
+        userOnline.set(socket.wa_number, socket.id);
+    });
+
+    socket.on("call", target => {
+        const isOnlineTarget = userOnline.get(target.to);
+        if (!isOnlineTarget) {
+            socket.emit("offline-target", target);
+        } else {
+            userInCallEvent.set(socket.wa_number, target);
+            const isInCallTarget = userInCallEvent.get(target.to);
+            if (!isInCallTarget || isInCallTarget.from === target.from) {
+                userInCallEvent.set(target.to, target);
+                socket.broadcast.emit("incoming-call", target);
+            } else {
+                socket.emit("target-in-another-call", target);
+            }
+        }
+    });
+
+    socket.on("reject-call", info => {
+        socket.broadcast.emit("call-rejected", info);
     });
 
     socket.on("disconnect", () => {
-        userInCallEvent.delete(socket.id);
+        userOnline.delete(socket.wa_number);
+        console.log(userOnline);
     });
 });
 

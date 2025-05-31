@@ -66,6 +66,7 @@ login_verify_otp.addEventListener("click", async e => {
     } else {
         login_verify_otp.disabled = true;
         login_verify_otp.style.display = "flex";
+        window.localStorage.setItem("wa_number", wa_number);
         window.location.href = "/beranda";
     }
 });

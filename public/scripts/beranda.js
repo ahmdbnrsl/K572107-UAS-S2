@@ -1,3 +1,26 @@
+const wa_number = window.localStorage.getItem("wa_number");
+const socket = io("http://localhost:8000", {
+    withCredentials: true
+});
+
+socket.on("connect", () => {
+    socket.emit("join");
+    socket.on("incoming-call", info => {
+        if (info.to === wa_number) {
+            const fromName = info.as_name || info.to;
+            const innerHTML = call_title.innerHTML;
+            call_title.innerHTML = innerHTML + fromName;
+            wrap_popup_call.style.display = "flex";
+
+            reject_call.addEventListener("click", e => {
+                socket.emit("reject-call", info);
+                wrap_popup_call.style.display = "none";
+                call_title.innerHTML = innerHTML;
+            });
+        }
+    });
+});
+
 let currentSave = null;
 window.addEventListener("load", async e => {
     const response = await fetch("/api/contacts", {

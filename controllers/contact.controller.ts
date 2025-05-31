@@ -12,10 +12,17 @@ interface IContact {
     as_name?: string;
 }
 
+interface IParamsGetContactInfo {
+    wa_number: string;
+    save: string;
+}
 interface IParamsAddContact extends IContact {}
 interface IParamsDelContact extends IContact {}
 interface IUser {
     wa_number: string;
+}
+interface IContactInfoNull {
+    save: false;
 }
 /**
  * Configuration
@@ -31,6 +38,27 @@ const userModel = mongoose.models.users || mongoose.model("users", userSchema);
  *
  *
  **/
+export const getContactInfo = async (
+    params: IParamsGetContactInfo
+): Promise<IContact | IContactInfoNull | false> => {
+    const { wa_number, save } = params;
+    try {
+        await mongoose.connect(MONGODB_CONNECTION_URI);
+        const result: IContact | null = await contactModel.findOne({
+            wa_number,
+            save
+        });
+        if (result) return result;
+        else if (result === null) return { save: false };
+        return false;
+    } catch (error) {
+        console.error(error);
+        return false;
+    } finally {
+        await mongoose.connection.close();
+    }
+};
+
 export const getAllContacts = async (
     wa_number: string
 ): Promise<IContact[] | false> => {

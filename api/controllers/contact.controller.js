@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteContact = exports.addContact = exports.getAllContacts = void 0;
+exports.deleteContact = exports.addContact = exports.getAllContacts = exports.getContactInfo = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const contact_schema_1 = require(".././schemas/contact.schema");
 const user_schema_1 = require(".././schemas/user.schema");
@@ -20,6 +20,29 @@ const userModel = mongoose_1.default.models.users || mongoose_1.default.model("u
  *
  *
  **/
+const getContactInfo = async (params) => {
+    const { wa_number, save } = params;
+    try {
+        await mongoose_1.default.connect(MONGODB_CONNECTION_URI);
+        const result = await contactModel.findOne({
+            wa_number,
+            save
+        });
+        if (result)
+            return result;
+        else if (result === null)
+            return { save: false };
+        return false;
+    }
+    catch (error) {
+        console.error(error);
+        return false;
+    }
+    finally {
+        await mongoose_1.default.connection.close();
+    }
+};
+exports.getContactInfo = getContactInfo;
 const getAllContacts = async (wa_number) => {
     try {
         await mongoose_1.default.connect(MONGODB_CONNECTION_URI);
