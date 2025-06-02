@@ -6,8 +6,9 @@ const socket = io("http://localhost:8000", {
 socket.on("connect", () => {
     socket.emit("join");
     socket.on("incoming-call", info => {
+        console.log(info.to, wa_number);
         if (info.to === wa_number) {
-            const fromName = info.as_name || info.to;
+            const fromName = info.as_name || info.from;
             const innerHTML = call_title.innerHTML;
             call_title.innerHTML = innerHTML + fromName;
             wrap_popup_call.style.display = "flex";
@@ -16,6 +17,21 @@ socket.on("connect", () => {
                 socket.emit("reject-call", info);
                 wrap_popup_call.style.display = "none";
                 call_title.innerHTML = innerHTML;
+            });
+
+            accept_call.addEventListener("click", e => {
+                e.preventDefault();
+                wrap_popup_call.style.display = "none";
+                call_title.innerHTML = innerHTML;
+                socket.emit("accept-call", info);
+                window.location.href = "/panggilan/" + info.from;
+            });
+
+            socket.on("cancel-call", from => {
+                if (info.from === from) {
+                    wrap_popup_call.style.display = "none";
+                    call_title.innerHTML = innerHTML;
+                }
             });
         }
     });

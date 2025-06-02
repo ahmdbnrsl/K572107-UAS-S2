@@ -6,12 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkIfUserExist = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const user_schema_1 = require(".././schemas/user.schema");
+const mongoose_connection_1 = require(".././connection/mongoose.connection");
 /**
  * Configuration
  *
  *
  **/
-const MONGODB_CONNECTION_URI = process.env.MONGODB_CONNECTION_URI || "";
 const userModel = mongoose_1.default.models.users || mongoose_1.default.model("users", user_schema_1.userSchema);
 /**
  * Controller
@@ -19,8 +19,8 @@ const userModel = mongoose_1.default.models.users || mongoose_1.default.model("u
  *
  **/
 const checkIfUserExist = async (wa_number) => {
+    await (0, mongoose_connection_1.connectToDB)();
     try {
-        await mongoose_1.default.connect(MONGODB_CONNECTION_URI);
         const exist = await userModel.findOne({ wa_number });
         if (exist)
             return true;
@@ -30,9 +30,6 @@ const checkIfUserExist = async (wa_number) => {
     catch (error) {
         console.error(error);
         return false;
-    }
-    finally {
-        await mongoose_1.default.connection.close();
     }
 };
 exports.checkIfUserExist = checkIfUserExist;

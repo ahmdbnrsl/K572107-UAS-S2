@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { contactSchema } from ".././schemas/contact.schema";
 import { userSchema } from ".././schemas/user.schema";
+import { connectToDB } from ".././connection/mongoose.connection";
 /**
  * Interfaces
  *
@@ -29,7 +30,6 @@ interface IContactInfoNull {
  *
  *
  **/
-const MONGODB_CONNECTION_URI = process.env.MONGODB_CONNECTION_URI || "";
 const contactModel =
     mongoose.models.contacts || mongoose.model("contacts", contactSchema);
 const userModel = mongoose.models.users || mongoose.model("users", userSchema);
@@ -43,19 +43,18 @@ export const getContactInfo = async (
 ): Promise<IContact | IContactInfoNull | false> => {
     const { wa_number, save } = params;
     try {
-        await mongoose.connect(MONGODB_CONNECTION_URI);
+        await connectToDB();
         const result: IContact | null = await contactModel.findOne({
             wa_number,
             save
         });
+
         if (result) return result;
         else if (result === null) return { save: false };
         return false;
     } catch (error) {
         console.error(error);
         return false;
-    } finally {
-        await mongoose.connection.close();
     }
 };
 
@@ -63,15 +62,13 @@ export const getAllContacts = async (
     wa_number: string
 ): Promise<IContact[] | false> => {
     try {
-        await mongoose.connect(MONGODB_CONNECTION_URI);
+        await connectToDB();
         const result: IContact[] = await contactModel.find({ wa_number });
         if (result) return result;
         else return false;
     } catch (error) {
         console.error(error);
         return false;
-    } finally {
-        await mongoose.connection.close();
     }
 };
 
@@ -81,7 +78,7 @@ export const addContact = async (
     const { wa_number, save, as_name } = params;
     if (wa_number === save) return false;
     try {
-        await mongoose.connect(MONGODB_CONNECTION_URI);
+        await connectToDB();
         const existingContact: IContact | null = await contactModel.findOne({
             wa_number,
             save
@@ -98,8 +95,6 @@ export const addContact = async (
     } catch (error) {
         console.error(error);
         return false;
-    } finally {
-        await mongoose.connection.close();
     }
 };
 
@@ -108,7 +103,7 @@ export const deleteContact = async (
 ): Promise<boolean> => {
     const { save, wa_number } = params;
     try {
-        await mongoose.connect(MONGODB_CONNECTION_URI);
+        await connectToDB();
         const delContact = await contactModel.deleteOne({
             wa_number,
             save
@@ -119,7 +114,5 @@ export const deleteContact = async (
     } catch (error) {
         console.error(error);
         return false;
-    } finally {
-        await mongoose.connection.close();
     }
 };

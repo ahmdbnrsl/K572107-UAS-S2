@@ -9,12 +9,12 @@ const crypto_js_1 = __importDefault(require("crypto-js"));
 require("dotenv/config");
 const otp_schema_1 = require(".././schemas/otp.schema");
 const user_schema_1 = require(".././schemas/user.schema");
+const mongoose_connection_1 = require(".././connection/mongoose.connection");
 /**
  * Configuration
  *
  *
  **/
-const MONGODB_CONNECTION_URI = process.env.MONGODB_CONNECTION_URI || "";
 const WA_API_URL = process.env.WA_API_URL || "";
 const WA_API_SECRET = process.env.WA_API_SECRET || "";
 const CRYPTO_KEY = process.env.CRYPTO_KEY || "";
@@ -92,7 +92,7 @@ async function sendOTP(wa_number, otp_code) {
 const sendAndStoreOTP = async (params) => {
     const { wa_number, created_at, expired_at } = params;
     try {
-        await mongoose_1.default.connect(MONGODB_CONNECTION_URI);
+        await (0, mongoose_connection_1.connectToDB)();
         const checkExistingNumber = await otpModel.findOne({ wa_number });
         const OTPCode = generateOTP();
         const sendOTPCode = await sendOTP(wa_number, OTPCode);
@@ -112,15 +112,12 @@ const sendAndStoreOTP = async (params) => {
         console.error(error);
         return false;
     }
-    finally {
-        await mongoose_1.default.connection.close();
-    }
 };
 exports.sendAndStoreOTP = sendAndStoreOTP;
 const verifyOTP = async (params) => {
     const { wa_number, otp_code, now } = params;
     try {
-        await mongoose_1.default.connect(MONGODB_CONNECTION_URI);
+        await (0, mongoose_connection_1.connectToDB)();
         const otp = await otpModel.findOne({ wa_number });
         if (!otp)
             return false;
@@ -141,9 +138,6 @@ const verifyOTP = async (params) => {
     catch (error) {
         console.error(error);
         return false;
-    }
-    finally {
-        await mongoose_1.default.connection.close();
     }
 };
 exports.verifyOTP = verifyOTP;

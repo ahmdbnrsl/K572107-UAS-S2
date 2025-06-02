@@ -7,12 +7,12 @@ exports.deleteContact = exports.addContact = exports.getAllContacts = exports.ge
 const mongoose_1 = __importDefault(require("mongoose"));
 const contact_schema_1 = require(".././schemas/contact.schema");
 const user_schema_1 = require(".././schemas/user.schema");
+const mongoose_connection_1 = require(".././connection/mongoose.connection");
 /**
  * Configuration
  *
  *
  **/
-const MONGODB_CONNECTION_URI = process.env.MONGODB_CONNECTION_URI || "";
 const contactModel = mongoose_1.default.models.contacts || mongoose_1.default.model("contacts", contact_schema_1.contactSchema);
 const userModel = mongoose_1.default.models.users || mongoose_1.default.model("users", user_schema_1.userSchema);
 /**
@@ -23,7 +23,7 @@ const userModel = mongoose_1.default.models.users || mongoose_1.default.model("u
 const getContactInfo = async (params) => {
     const { wa_number, save } = params;
     try {
-        await mongoose_1.default.connect(MONGODB_CONNECTION_URI);
+        await (0, mongoose_connection_1.connectToDB)();
         const result = await contactModel.findOne({
             wa_number,
             save
@@ -38,14 +38,11 @@ const getContactInfo = async (params) => {
         console.error(error);
         return false;
     }
-    finally {
-        await mongoose_1.default.connection.close();
-    }
 };
 exports.getContactInfo = getContactInfo;
 const getAllContacts = async (wa_number) => {
     try {
-        await mongoose_1.default.connect(MONGODB_CONNECTION_URI);
+        await (0, mongoose_connection_1.connectToDB)();
         const result = await contactModel.find({ wa_number });
         if (result)
             return result;
@@ -56,9 +53,6 @@ const getAllContacts = async (wa_number) => {
         console.error(error);
         return false;
     }
-    finally {
-        await mongoose_1.default.connection.close();
-    }
 };
 exports.getAllContacts = getAllContacts;
 const addContact = async (params) => {
@@ -66,7 +60,7 @@ const addContact = async (params) => {
     if (wa_number === save)
         return false;
     try {
-        await mongoose_1.default.connect(MONGODB_CONNECTION_URI);
+        await (0, mongoose_connection_1.connectToDB)();
         const existingContact = await contactModel.findOne({
             wa_number,
             save
@@ -85,15 +79,12 @@ const addContact = async (params) => {
         console.error(error);
         return false;
     }
-    finally {
-        await mongoose_1.default.connection.close();
-    }
 };
 exports.addContact = addContact;
 const deleteContact = async (params) => {
     const { save, wa_number } = params;
     try {
-        await mongoose_1.default.connect(MONGODB_CONNECTION_URI);
+        await (0, mongoose_connection_1.connectToDB)();
         const delContact = await contactModel.deleteOne({
             wa_number,
             save
@@ -105,9 +96,6 @@ const deleteContact = async (params) => {
     catch (error) {
         console.error(error);
         return false;
-    }
-    finally {
-        await mongoose_1.default.connection.close();
     }
 };
 exports.deleteContact = deleteContact;

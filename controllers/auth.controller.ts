@@ -3,6 +3,7 @@ import CryptoJS from "crypto-js";
 import "dotenv/config";
 import { otpSchema } from ".././schemas/otp.schema";
 import { userSchema } from ".././schemas/user.schema";
+import { connectToDB } from ".././connection/mongoose.connection";
 /**
  * Interfaces
  *
@@ -29,7 +30,6 @@ interface IResultLogin {
  *
  *
  **/
-const MONGODB_CONNECTION_URI = process.env.MONGODB_CONNECTION_URI || "";
 const WA_API_URL = process.env.WA_API_URL || "";
 const WA_API_SECRET = process.env.WA_API_SECRET || "";
 const CRYPTO_KEY = process.env.CRYPTO_KEY || "";
@@ -112,7 +112,7 @@ export const sendAndStoreOTP = async (
     const { wa_number, created_at, expired_at } = params;
 
     try {
-        await mongoose.connect(MONGODB_CONNECTION_URI);
+        await connectToDB();
 
         const checkExistingNumber = await otpModel.findOne({ wa_number });
 
@@ -132,8 +132,6 @@ export const sendAndStoreOTP = async (
     } catch (error) {
         console.error(error);
         return false;
-    } finally {
-        await mongoose.connection.close();
     }
 };
 
@@ -143,7 +141,7 @@ export const verifyOTP = async (
     const { wa_number, otp_code, now } = params;
 
     try {
-        await mongoose.connect(MONGODB_CONNECTION_URI);
+        await connectToDB();
         const otp = await otpModel.findOne({ wa_number });
 
         if (!otp) return false;
@@ -164,7 +162,5 @@ export const verifyOTP = async (
     } catch (error) {
         console.error(error);
         return false;
-    } finally {
-        await mongoose.connection.close();
     }
 };

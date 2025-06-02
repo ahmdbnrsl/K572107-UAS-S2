@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import http from "http";
 import { Server, type Socket } from "socket.io";
+import "dotenv/config";
 /** middleware **/
 import { authMiddleware } from "./middlewares/auth.middleware";
 import { socketMiddleware } from "./middlewares/socket.middleware";
@@ -156,7 +157,6 @@ app.post("/api/login", async (req, res) => {
 app.post("/api/contactinfo", authMiddleware, async (req, res) => {
     console.log("POST API /api/contactinfo ...");
     const params = req.body;
-    params.wa_number = (req as Req).user.wa_number;
     const contactInfo = await getContactInfo(params);
 
     if (contactInfo) {
@@ -268,21 +268,37 @@ IO.on("connection", socket => {
         } else {
             userInCallEvent.set(socket.wa_number, target);
             const isInCallTarget = userInCallEvent.get(target.to);
-            if (!isInCallTarget || isInCallTarget.from === target.from) {
+            if (!isInCallTarget) {
                 userInCallEvent.set(target.to, target);
                 socket.broadcast.emit("incoming-call", target);
+                console.log("incoming call");
             } else {
-                socket.emit("target-in-another-call", target);
+                if (isInCallTarget.from !== target.from)
+                    socket.emit("target-in-another-call", target);
             }
         }
     });
 
     socket.on("reject-call", info => {
         socket.broadcast.emit("call-rejected", info);
+        userInCallEvent.delete(info.from);
+        userInCallEvent.delete(info.to);
+    });
+
+    socket.on("accept-call", info => {
+        socket.broadcast.emit("call-accepted", info);
     });
 
     socket.on("disconnect", () => {
         userOnline.delete(socket.wa_number);
+
+        const userInCall = userInCallEvent.get(socket.wa_number);
+        if (userInCall) {
+            userInCallEvent.delete(userInCall.to);
+            userInCallEvent.delete(socket.wa_number);
+        }
+
+        socket.broadcast.emit("cancel-call", socket.wa_number);
         console.log(userOnline);
     });
 });

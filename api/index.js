@@ -9,6 +9,7 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const http_1 = __importDefault(require("http"));
 const socket_io_1 = require("socket.io");
+require("dotenv/config");
 /** middleware **/
 const auth_middleware_1 = require("./middlewares/auth.middleware");
 const socket_middleware_1 = require("./middlewares/socket.middleware");
@@ -118,7 +119,6 @@ app.post("/api/login", async (req, res) => {
 app.post("/api/contactinfo", auth_middleware_1.authMiddleware, async (req, res) => {
     console.log("POST API /api/contactinfo ...");
     const params = req.body;
-    params.wa_number = req.user.wa_number;
     const contactInfo = await (0, contact_controller_1.getContactInfo)(params);
     if (contactInfo) {
         res.json({
@@ -223,20 +223,33 @@ IO.on("connection", socket => {
         else {
             userInCallEvent.set(socket.wa_number, target);
             const isInCallTarget = userInCallEvent.get(target.to);
-            if (!isInCallTarget || isInCallTarget.from === target.from) {
+            if (!isInCallTarget) {
                 userInCallEvent.set(target.to, target);
                 socket.broadcast.emit("incoming-call", target);
+                console.log("incoming call");
             }
             else {
-                socket.emit("target-in-another-call", target);
+                if (isInCallTarget.from !== target.from)
+                    socket.emit("target-in-another-call", target);
             }
         }
     });
     socket.on("reject-call", info => {
         socket.broadcast.emit("call-rejected", info);
+        userInCallEvent.delete(info.from);
+        userInCallEvent.delete(info.to);
+    });
+    socket.on("accept-call", info => {
+        socket.broadcast.emit("call-accepted", info);
     });
     socket.on("disconnect", () => {
         userOnline.delete(socket.wa_number);
+        const userInCall = userInCallEvent.get(socket.wa_number);
+        if (userInCall) {
+            userInCallEvent.delete(userInCall.to);
+            userInCallEvent.delete(socket.wa_number);
+        }
+        socket.broadcast.emit("cancel-call", socket.wa_number);
         console.log(userOnline);
     });
 });
