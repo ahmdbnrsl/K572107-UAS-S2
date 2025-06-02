@@ -1,8 +1,19 @@
 const wa_number = window.localStorage.getItem("wa_number");
-const target = document.URL.split("/").pop();
+const target = document.URL.split("/").pop().split("?")[0];
 const socket = io("http://localhost:8000", {
     withCredentials: true
 });
+const config = {
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+};
+const params = new URLSearchParams(window.location.search);
+const status = params.get("as");
+
+if (!status || !["caller", "receiver"].includes(status)) {
+    window.location.href = "/beranda";
+}
+
+let peerConnection;
 
 const fetchContactInfo = async (wa_number, save) => {
     const response = await fetch("/api/contactinfo", {
@@ -25,52 +36,140 @@ const fetchContactInfo = async (wa_number, save) => {
 
 socket.on("connect", async () => {
     socket.emit("join");
-
-    const contactInfo = await fetchContactInfo(target, wa_number);
-
-    if (!contactInfo) {
-        alert("Terjadi kesalahan");
-        window.location.href = "/beranda";
-    } else {
-        const targetInfo = {
+    if (status === "caller") {
+        const targetInfo = await fetchContactInfo(target, wa_number);
+        socket.emit("call", {
             from: wa_number,
             to: target,
-            as_name: contactInfo.save ? contactInfo.as_name : ""
-        };
+            as_name: targetInfo?.as_name || ""
+        });
 
-        socket.emit("call", targetInfo);
-    }
-
-    socket.on("offline-target", info => {
-        if (info.from === wa_number) {
-            alert("Nomor yang anda tuju sedang offline");
+        socket.on("target-offline", () => {
+            alert("Nomor yang anda tuju sedang tidak aktif");
             window.location.href = "/beranda";
-        }
-    });
+        });
 
-    socket.on("call-rejected", info => {
-        if (info.from === wa_number) {
+        socket.on("user-in-call", () => {
+            alert("Nomor yang anda tuju sedang berada di panggilan lain.");
+            window.location.href = "/beranda";
+        });
+
+        socket.on("reject-call", () => {
             alert("Panggilan ditolak");
             window.location.href = "/beranda";
-        }
-    });
+        });
 
-    socket.on("target-in-another-call", info => {
-        if (info.to != target) {
-            alert("Nomor yang anda tuju sedang dalam panggilan lain");
+        socket.on("receive-offer", async ({ from, offer }) => {
+            try {
+                peerConnection = new RTCPeerConnection(config);
+
+                video_call.style.display = "inline-block";
+
+                if (window.localStream) {
+                    window.localStream
+                        .getTracks()
+                        .forEach(track => track.stop());
+                }
+
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true
+                });
+
+                localVideo.srcObject = stream;
+                window.localStream = stream;
+
+                stream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, stream);
+                });
+
+                peerConnection.onicecandidate = e => {
+                    if (e.candidate) {
+                        socket.emit("ice-candidate", {
+                            info: { from: wa_number, to: target },
+                            candidate: e.candidate
+                        });
+                    }
+                };
+
+                peerConnection.ontrack = e => {
+                    remoteVideo.srcObject = e.streams[0];
+                };
+
+                await peerConnection.setRemoteDescription(
+                    new RTCSessionDescription(offer)
+                );
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+
+                socket.emit("send-answer", {
+                    to: target,
+                    from: wa_number,
+                    answer
+                });
+            } catch (e) {
+                alert(e);
+            }
+        });
+    } else {
+        try {
+            peerConnection = new RTCPeerConnection(config);
+
+            video_call.style.display = "inline-block";
+
+            if (window.localStream) {
+                window.localStream.getTracks().forEach(track => track.stop());
+            }
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true
+            });
+            localVideo.srcObject = stream;
+            window.localStream = stream;
+
+            stream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, stream);
+            });
+
+            peerConnection.onicecandidate = e => {
+                if (e.candidate) {
+                    socket.emit("ice-candidate", {
+                        info: { from: wa_number, to: target },
+                        candidate: e.candidate
+                    });
+                }
+            };
+
+            peerConnection.ontrack = e => {
+                remoteVideo.srcObject = e.streams[0];
+            };
+
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+
+            socket.emit("send-offer", {
+                from: wa_number,
+                to: target,
+                offer
+            });
+
+            socket.on("receive-answer", async ({ answer }) => {
+                if (peerConnection) {
+                    await peerConnection.setRemoteDescription(
+                        new RTCSessionDescription(answer)
+                    );
+                }
+            });
+        } catch (e) {
+            alert("Terjadi Kesalahan");
             window.location.href = "/beranda";
         }
-    });
+    }
 
-    socket.on("call-accepted", async info => {
-        if ([info.to, info.from].includes(wa_number)) {
-            const contactInfo = await fetchContactInfo(wa_number, target);
-            if (!contactInfo) {
-                alert("Terjadi kesalahan");
-                window.location.href = "/beranda";
-            } else {
-                users.innerText = contactInfo.save;
-            }
+    socket.on("ice-candidate", ({ candidate }) => {
+        if (peerConnection) {
+            peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
         }
     });
 });

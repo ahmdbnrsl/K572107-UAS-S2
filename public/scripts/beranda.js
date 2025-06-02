@@ -5,35 +5,34 @@ const socket = io("http://localhost:8000", {
 
 socket.on("connect", () => {
     socket.emit("join");
-    socket.on("incoming-call", info => {
-        console.log(info.to, wa_number);
-        if (info.to === wa_number) {
-            const fromName = info.as_name || info.from;
-            const innerHTML = call_title.innerHTML;
-            call_title.innerHTML = innerHTML + fromName;
-            wrap_popup_call.style.display = "flex";
 
-            reject_call.addEventListener("click", e => {
-                socket.emit("reject-call", info);
-                wrap_popup_call.style.display = "none";
-                call_title.innerHTML = innerHTML;
-            });
+    socket.on("incoming-call", ({ from, to, as_name }) => {
+        const fromName = as_name || from;
+        const innerHTML = call_title.innerHTML;
 
-            accept_call.addEventListener("click", e => {
-                e.preventDefault();
-                wrap_popup_call.style.display = "none";
-                call_title.innerHTML = innerHTML;
-                socket.emit("accept-call", info);
-                window.location.href = "/panggilan/" + info.from;
-            });
+        call_title.innerHTML = innerHTML + fromName;
+        wrap_popup_call.style.display = "flex";
 
-            socket.on("cancel-call", from => {
-                if (info.from === from) {
-                    wrap_popup_call.style.display = "none";
-                    call_title.innerHTML = innerHTML;
-                }
-            });
-        }
+        reject_call.addEventListener("click", e => {
+            socket.emit("reject-call", { from, to, as_name });
+            wrap_popup_call.style.display = "none";
+            call_title.innerHTML = innerHTML;
+        });
+
+        accept_call.addEventListener("click", e => {
+            e.preventDefault();
+            wrap_popup_call.style.display = "none";
+            call_title.innerHTML = innerHTML;
+
+            socket.emit("accept-call", { from, to, as_name });
+            window.location.href = "/panggilan/" + from + "?as=receiver";
+        });
+    });
+
+    socket.on("reject-call", () => {
+        const innerHTML = call_title.innerHTML;
+        wrap_popup_call.style.display = "none";
+        call_title.innerHTML = innerHTML;
     });
 });
 
@@ -180,7 +179,7 @@ const toggleConfirmator = (...args) => {
 
 const startCall = (...args) => {
     if (typeof args[0] === "string") {
-        window.location.href = "/panggilan/" + args[0];
+        window.location.href = "/panggilan/" + args[0] + "?as=caller";
     }
 };
 

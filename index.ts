@@ -80,7 +80,12 @@ app.get("/:page", authMiddleware, async (req, res) => {
 
 app.get("/panggilan/:wanumber", async (req, res) => {
     const wa_number = req.params.wanumber;
-    if (!wa_number) {
+    const query = req.query.as;
+    if (
+        !wa_number ||
+        !query ||
+        !["caller", "receiver"].includes(query as string)
+    ) {
         res.sendFile(path.join(process.cwd(), "public/pages", `404.html`));
     } else {
         const checkExist = await checkIfUserExist(wa_number);
@@ -252,54 +257,69 @@ app.use((req, res, next) => {
  *
  **/
 
-const userOnline = new Map();
-const userInCallEvent = new Map();
+const userOnline: Map<string, string> = new Map<string, string>();
+const userInCall: Map<string, any> = new Map<string, any>();
 
 IO.use(socketMiddleware);
 IO.on("connection", socket => {
     socket.on("join", () => {
-        userOnline.set(socket.wa_number, socket.id);
+        userOnline.set(socket.wa_number as string, socket.id as string);
     });
 
-    socket.on("call", target => {
-        const isOnlineTarget = userOnline.get(target.to);
-        if (!isOnlineTarget) {
-            socket.emit("offline-target", target);
+    socket.on("call", async ({ from, to, as_name }) => {
+        userInCall.set(socket.wa_number as string, { from, to, as_name });
+
+        const onlineUser = userOnline.get(to as string);
+        const inCallUser = userInCall.get(to as string);
+
+        if (!onlineUser) {
+            socket.emit("target-offline");
+        } else if (
+            inCallUser &&
+            inCallUser.from !== socket.wa_number &&
+            inCallUser &&
+            inCallUser.to !== socket.wa_number
+        ) {
+            socket.emit("user-in-call");
         } else {
-            userInCallEvent.set(socket.wa_number, target);
-            const isInCallTarget = userInCallEvent.get(target.to);
-            if (!isInCallTarget) {
-                userInCallEvent.set(target.to, target);
-                socket.broadcast.emit("incoming-call", target);
-                console.log("incoming call");
-            } else {
-                if (isInCallTarget.from !== target.from)
-                    socket.emit("target-in-another-call", target);
-            }
+            IO.to(onlineUser).emit("incoming-call", { from, to, as_name });
+            userInCall.set(to as string, { from, to, as_name });
         }
     });
 
-    socket.on("reject-call", info => {
-        socket.broadcast.emit("call-rejected", info);
-        userInCallEvent.delete(info.from);
-        userInCallEvent.delete(info.to);
+    socket.on("reject-call", ({ from, to, as_name }) => {
+        const fromId = userOnline.get(from as string);
+        const targetId = userOnline.get(to as string);
+
+        IO.to([fromId, targetId] as string[]).emit("reject-call");
     });
 
-    socket.on("accept-call", info => {
-        socket.broadcast.emit("call-accepted", info);
+    socket.on("send-offer", ({ to, from, offer }) => {
+        const targetSocketId = userOnline.get(to);
+        if (targetSocketId) {
+            IO.to(targetSocketId).emit("receive-offer", { from, offer });
+            console.log(to, offer);
+        }
+    });
+
+    socket.on("send-answer", ({ to, from, answer }) => {
+        const targetSocketId = userOnline.get(to);
+        if (targetSocketId) {
+            IO.to(targetSocketId).emit("receive-answer", { from, answer });
+            console.log(to, answer);
+        }
+    });
+
+    socket.on("ice-candidate", ({ info, candidate }) => {
+        const targetSocketId = userOnline.get(info.to);
+        if (targetSocketId) {
+            IO.to(targetSocketId).emit("ice-candidate", { candidate });
+            console.log(info.to, candidate);
+        }
     });
 
     socket.on("disconnect", () => {
-        userOnline.delete(socket.wa_number);
-
-        const userInCall = userInCallEvent.get(socket.wa_number);
-        if (userInCall) {
-            userInCallEvent.delete(userInCall.to);
-            userInCallEvent.delete(socket.wa_number);
-        }
-
-        socket.broadcast.emit("cancel-call", socket.wa_number);
-        console.log(userOnline);
+        userOnline.delete(socket.wa_number as string);
     });
 });
 
