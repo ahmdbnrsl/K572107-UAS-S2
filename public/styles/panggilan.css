@@ -6,19 +6,24 @@ body {
     flex-direction: column;
     box-sizing: border-box;
     position: relative;
+    padding: 0;
+    margin: 0;
 }
 
 #video_call {
     width: 100vw;
-    height: 100vh;
-    position: absolute;
+    height: 50vh;
+    position: relative;
     display: none;
     inset: 0;
 }
 
 #remoteVideo {
-    position: absolute;
+    width: 100%;
+    position: relative;
+    height: 50vh;
     inset: 0;
+    object-fit: cover;
 }
 
 #local {
@@ -27,18 +32,15 @@ body {
     justify-content: center;
     align-items: flex-end;
     z-index: 999;
-    right: 5rem;
-    bottom: 8rem;
-    width: 500px;
-    height: 800px;
+    inset: 0;
+    width: 100%;
+    height: 100%;
 }
 
 #localVideo {
   transform: scaleX(-1);
   object-fit: cover;
   position: absolute;
-  border-radius: 1rem;
-  border: 2px solid white;
   z-index: 998;
   width: 100%;
   height: 100%;
