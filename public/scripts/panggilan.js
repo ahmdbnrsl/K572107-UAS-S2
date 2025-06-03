@@ -1,6 +1,6 @@
 const wa_number = window.localStorage.getItem("wa_number");
 const target = document.URL.split("/").pop().split("?")[0];
-const socket = io("http://192.168.1.23:8000", {
+const socket = io("/", {
     withCredentials: true
 });
 const config = {

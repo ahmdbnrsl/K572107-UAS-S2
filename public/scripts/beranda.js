@@ -1,5 +1,5 @@
 const wa_number = window.localStorage.getItem("wa_number");
-const socket = io("http://192.168.1.23:8000", {
+const socket = io("/", {
     withCredentials: true
 });
 
