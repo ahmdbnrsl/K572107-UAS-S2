@@ -281,19 +281,23 @@ IO.on("connection", socket => {
         if (!clients) {
             diffClient = userOnline.get(client);
             userInCall.delete(client);
+            if (diffClient)
+                IO.to(diffClient).emit("reset-call-event");
         }
         else {
             if ([clients.to].includes(client)) {
                 diffClient = userOnline.get(client.to);
                 userInCall.delete(client.to);
+                if (diffClient)
+                    IO.to(diffClient).emit("reset-call-event");
             }
             if ([clients.from].includes(client)) {
                 diffClient = userOnline.get(client.from);
                 userInCall.delete(client.from);
+                if (diffClient)
+                    IO.to(diffClient).emit("reset-call-event");
             }
         }
-        if (diffClient)
-            IO.to(diffClient).emit("reset-call-event");
     });
     socket.on("disconnect", () => {
         userOnline.delete(socket.wa_number);

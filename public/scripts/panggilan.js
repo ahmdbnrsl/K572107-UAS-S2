@@ -48,6 +48,7 @@ socket.on("connect", async () => {
 
     socket.on("end-call", () => {
         alert("Panggilan Berakhir");
+        (document?.exitFullscreen || document?.webkitExitFullscreen)();
         window.location.href = "/beranda";
     });
 
@@ -128,6 +129,8 @@ socket.on("connect", async () => {
                     answer
                 });
             } catch (e) {
+                socket.emit("reset-call-event", wa_number);
+                window.location.href = "/beranda";
                 alert(e);
             }
         });
@@ -187,8 +190,9 @@ socket.on("connect", async () => {
                 }
             });
         } catch (e) {
-            alert(e);
+            socket.emit("reset-call-event", wa_number);
             window.location.href = "/beranda";
+            alert(e);
         }
     }
 
@@ -199,7 +203,7 @@ socket.on("connect", async () => {
     });
 
     socket.on("reset-call-event", () => {
-        alert("Nomor yang anda tuju sedang offline");
+        alert("Nomor yang anda tuju keluar panggilan");
         window.location.href = "/beranda";
     });
 });
