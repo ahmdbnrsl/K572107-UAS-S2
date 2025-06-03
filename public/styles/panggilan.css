@@ -8,6 +8,16 @@ body {
     position: relative;
     padding: 0;
     margin: 0;
+    justify-content: center;
+    align-items: center;
+}
+
+#target_name {
+    position: absolute;
+    top: 3rem;
+    color: black;
+    font-weight: 700;
+    font-size: 3.5rem;
 }
 
 #video_call {

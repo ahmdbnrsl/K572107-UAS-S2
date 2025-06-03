@@ -284,7 +284,6 @@ IO.on("connection", socket => {
             socket.emit("user-in-call");
         } else {
             IO.to(onlineUser).emit("incoming-call", { from, to, as_name });
-            userInCall.set(to as string, { from, to, as_name });
         }
     });
 
@@ -292,12 +291,16 @@ IO.on("connection", socket => {
         const fromId = userOnline.get(from as string);
         const targetId = userOnline.get(to as string);
 
+        userInCall.delete(to);
+        userInCall.delete(from);
+
         IO.to([fromId, targetId] as string[]).emit("reject-call");
     });
 
     socket.on("send-offer", ({ to, from, offer }) => {
         const targetSocketId = userOnline.get(to);
         if (targetSocketId) {
+            userInCall.set(from as string, { from: to, to: from, as_name: "" });
             IO.to(targetSocketId).emit("receive-offer", { from, offer });
             console.log(to, offer);
         }
@@ -317,6 +320,37 @@ IO.on("connection", socket => {
             IO.to(targetSocketId).emit("ice-candidate", { candidate });
             console.log(info.to, candidate);
         }
+    });
+
+    socket.on("end-call", ({ client_1, client_2 }) => {
+        userInCall.delete(client_1);
+        userInCall.delete(client_2);
+
+        const client_1_id = userOnline.get(client_1);
+        const client_2_id = userOnline.get(client_2);
+
+        if (client_1_id) IO.to(client_1_id).emit("end-call");
+        if (client_2_id) IO.to(client_2_id).emit("end-call");
+    });
+
+    socket.on("reset-call-event", client => {
+        const clients = userInCall.get(client);
+        let diffClient: any;
+
+        if (!clients) {
+            diffClient = userOnline.get(client);
+            userInCall.delete(client);
+        } else {
+            if ([clients.to].includes(client)) {
+                diffClient = userOnline.get(client.to);
+                userInCall.delete(client.to);
+            }
+            if ([clients.from].includes(client)) {
+                diffClient = userOnline.get(client.from);
+                userInCall.delete(client.from);
+            }
+        }
+        if (diffClient) IO.to(diffClient).emit("reset-call-event");
     });
 
     socket.on("disconnect", () => {

@@ -36,6 +36,21 @@ const fetchContactInfo = async (wa_number, save) => {
 
 socket.on("connect", async () => {
     socket.emit("join");
+
+    end_call.addEventListener("click", e => {
+        e.preventDefault();
+        socket.emit("end-call", {
+            client_1: wa_number,
+            client_2: target
+        });
+        window.location.href = "/beranda";
+    });
+
+    socket.on("end-call", () => {
+        alert("Panggilan Berakhir");
+        window.location.href = "/beranda";
+    });
+
     if (status === "caller") {
         const targetInfo = await fetchContactInfo(target, wa_number);
         socket.emit("call", {
@@ -61,6 +76,9 @@ socket.on("connect", async () => {
 
         socket.on("receive-offer", async ({ from, offer }) => {
             try {
+                target_name.style.color = "white";
+                target_name.style.webkitTextStroke = "1px black;";
+                target_name.innerHTML = targetInfo?.as_name || target;
                 peerConnection = new RTCPeerConnection(config);
 
                 video_call.style.display = "inline-block";
@@ -115,6 +133,11 @@ socket.on("connect", async () => {
         });
     } else {
         try {
+            const targetInfo = await fetchContactInfo(target, wa_number);
+
+            target_name.style.color = "white";
+            target_name.style.webkitTextStroke = "1px black;";
+            target_name.innerHTML = targetInfo?.as_name || target;
             peerConnection = new RTCPeerConnection(config);
 
             video_call.style.display = "inline-block";
@@ -173,6 +196,11 @@ socket.on("connect", async () => {
         if (peerConnection) {
             peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
         }
+    });
+
+    socket.on("reset-call-event", () => {
+        alert("Nomor yang anda tuju sedang offline");
+        window.location.href = "/beranda";
     });
 });
 

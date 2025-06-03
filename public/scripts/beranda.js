@@ -5,6 +5,7 @@ const socket = io("/", {
 
 socket.on("connect", () => {
     socket.emit("join");
+    socket.emit("reset-call-event", wa_number);
 
     socket.on("incoming-call", ({ from, to, as_name }) => {
         const fromName = as_name || from;
