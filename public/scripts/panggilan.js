@@ -1,6 +1,6 @@
 const wa_number = window.localStorage.getItem("wa_number");
 const target = document.URL.split("/").pop().split("?")[0];
-const socket = io("http://localhost:8000", {
+const socket = io("http://192.168.1.23:8000", {
     withCredentials: true
 });
 const config = {
@@ -71,10 +71,12 @@ socket.on("connect", async () => {
                         .forEach(track => track.stop());
                 }
 
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: true
-                });
+                const stream = await window.navigator.mediaDevices.getUserMedia(
+                    {
+                        video: true,
+                        audio: true
+                    }
+                );
 
                 localVideo.srcObject = stream;
                 window.localStream = stream;
@@ -121,7 +123,7 @@ socket.on("connect", async () => {
                 window.localStream.getTracks().forEach(track => track.stop());
             }
 
-            const stream = await navigator.mediaDevices.getUserMedia({
+            const stream = await window.navigator.mediaDevices.getUserMedia({
                 video: true,
                 audio: true
             });
@@ -162,7 +164,7 @@ socket.on("connect", async () => {
                 }
             });
         } catch (e) {
-            alert("Terjadi Kesalahan");
+            alert(e);
             window.location.href = "/beranda";
         }
     }

@@ -217,6 +217,7 @@ IO.use(socket_middleware_1.socketMiddleware);
 IO.on("connection", socket => {
     socket.on("join", () => {
         userOnline.set(socket.wa_number, socket.id);
+        console.log(userOnline);
     });
     socket.on("call", async ({ from, to, as_name }) => {
         userInCall.set(socket.wa_number, { from, to, as_name });
