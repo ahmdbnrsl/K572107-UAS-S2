@@ -38,21 +38,14 @@ socket.on("connect", () => {
 });
 
 let currentSave = null;
-window.addEventListener("load", async e => {
-    const response = await fetch("/api/contacts", {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json"
-        }
-    });
-    if (response.ok) {
-        const contacts = await response.json();
-        contacts_loading.style.display = "none";
-        if (contacts.contacts.length === 0) {
-            contacts_empty.style.display = "flex";
-        } else {
-            let list_contacts = "";
-            contacts.contacts.forEach(
+let tempContactList = null;
+let contactList = null;
+
+function renderListContact() {
+    if (contactList) {
+        let list_contacts = "";
+        if (contactList.length > 0) {
+            contactList.forEach(
                 e =>
                     (list_contacts += `<div class="contact_card">
                 <div class="info_contact_wrap">
@@ -123,6 +116,30 @@ window.addEventListener("load", async e => {
             </div>`)
             );
             home_page.innerHTML = list_contacts;
+        } else {
+            home_page.innerHTML =
+                '<h1 id="contacts_not_found">Kontak Tidak ditemukan</h1>';
+        }
+    }
+}
+
+window.addEventListener("load", async e => {
+    const response = await fetch("/api/contacts", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    if (response.ok) {
+        const contacts = await response.json();
+        contacts_loading.style.display = "none";
+        if (contacts.contacts.length === 0) {
+            contacts_empty.style.display = "flex";
+        } else {
+            tempContactList = contacts.contacts;
+            contactList = tempContactList;
+
+            renderListContact();
         }
     }
 });
@@ -213,5 +230,20 @@ submit_del_contact.addEventListener("click", async e => {
     } else {
         del_contact_error.innerText = "Gagal menghapus kontak";
         del_contact_error.style.display = "flex";
+    }
+});
+
+input_search.addEventListener("input", e => {
+    if (tempContactList) {
+        if (input_search.value === "" || contactList.length === 0) {
+            contactList = tempContactList;
+        } else {
+            contactList = tempContactList.filter(i =>
+                i.as_name
+                    .toLowerCase()
+                    .includes(input_search.value.toLowerCase())
+            );
+        }
+        renderListContact();
     }
 });

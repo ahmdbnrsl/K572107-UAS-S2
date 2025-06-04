@@ -25,6 +25,10 @@ footer, header, hgroup, menu, nav, section {
 }
 body {
 	line-height: 1;
+	width: 100vw;
+	height: 100dvh;
+	max-height: 100dvh;
+	overflow-y: hidden;
 }
 ol, ul {
 	list-style: none;
