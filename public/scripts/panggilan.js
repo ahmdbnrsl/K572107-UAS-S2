@@ -129,6 +129,10 @@ socket.on("connect", async () => {
                     answer
                 });
             } catch (e) {
+                socket.emit("end-call", {
+                    client_1: wa_number,
+                    client_2: target
+                });
                 socket.emit("reset-call-event", wa_number);
                 window.location.href = "/beranda";
                 alert(e);
@@ -190,6 +194,10 @@ socket.on("connect", async () => {
                 }
             });
         } catch (e) {
+            socket.emit("end-call", {
+                client_1: wa_number,
+                client_2: target
+            });
             socket.emit("reset-call-event", wa_number);
             window.location.href = "/beranda";
             alert(e);

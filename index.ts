@@ -337,11 +337,11 @@ IO.on("connection", socket => {
         const clients = userInCall.get(client);
         let diffClient: any;
 
-        if (!clients) {
-            diffClient = userOnline.get(client);
-            userInCall.delete(client);
-            if (diffClient) IO.to(diffClient).emit("reset-call-event");
-        } else {
+        diffClient = userOnline.get(client);
+        userInCall.delete(client);
+        if (diffClient) IO.to(diffClient).emit("reset-call-event");
+
+        if (clients) {
             if ([clients.to].includes(client)) {
                 diffClient = userOnline.get(client.to);
                 userInCall.delete(client.to);
