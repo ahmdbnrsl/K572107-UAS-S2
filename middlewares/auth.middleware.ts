@@ -15,7 +15,8 @@ export function authMiddleware(req: any, res: any, next: any) {
     const token = req.cookies.token;
     const path = req.path;
 
-    if (path === "/masuk") {
+    if (path === "/masuk" || path === "/") {
+        if (path === "/" && !token) return res.redirect("/beranda");
         if (token) {
             try {
                 jwt.verify(token, JWT_KEY);

@@ -20,7 +20,9 @@ const JWT_KEY = process.env.JWT_KEY || "";
 function authMiddleware(req, res, next) {
     const token = req.cookies.token;
     const path = req.path;
-    if (path === "/masuk") {
+    if (path === "/masuk" || path === "/") {
+        if (path === "/" && !token)
+            return res.redirect("/beranda");
         if (token) {
             try {
                 jsonwebtoken_1.default.verify(token, JWT_KEY);

@@ -36,15 +36,16 @@ app.use(express_1.default.static(path_1.default.join(process.cwd(), "public")));
  *
  *
  **/
+app.get("/", auth_middleware_1.authMiddleware, () => { });
 app.get("/:page", auth_middleware_1.authMiddleware, async (req, res) => {
     const listPage = ["masuk", "beranda"];
     const params = req.params.page;
     if (listPage.includes(params)) {
-        const pathFile = path_1.default.join(process.cwd(), "public/pages", `${params}.html`);
+        const pathFile = path_1.default.join(process.cwd(), "views", `${params}.html`);
         res.sendFile(pathFile);
     }
     else {
-        res.sendFile(path_1.default.join(process.cwd(), "public/pages", `404.html`));
+        res.sendFile(path_1.default.join(process.cwd(), "views", `404.html`));
     }
 });
 app.get("/panggilan/:wanumber", async (req, res) => {
@@ -53,15 +54,15 @@ app.get("/panggilan/:wanumber", async (req, res) => {
     if (!wa_number ||
         !query ||
         !["caller", "receiver"].includes(query)) {
-        res.sendFile(path_1.default.join(process.cwd(), "public/pages", `404.html`));
+        res.sendFile(path_1.default.join(process.cwd(), "views", `404.html`));
     }
     else {
         const checkExist = await (0, users_controller_1.checkIfUserExist)(wa_number);
         if (!checkExist) {
-            res.sendFile(path_1.default.join(process.cwd(), "public/pages", `404.html`));
+            res.sendFile(path_1.default.join(process.cwd(), "views", `404.html`));
         }
         else
-            res.sendFile(path_1.default.join(process.cwd(), "public/pages", `panggilan.html`));
+            res.sendFile(path_1.default.join(process.cwd(), "views", `panggilan.html`));
     }
 });
 /**
@@ -200,11 +201,7 @@ app.delete("/api/deletecontact", auth_middleware_1.authMiddleware, async (req, r
     }
 });
 app.use((req, res, next) => {
-    res.status(404).json({
-        status: false,
-        code: 404,
-        message: "Not Found"
-    });
+    res.status(404).sendFile(path_1.default.join(process.cwd(), "views", `404.html`));
 });
 /**
  * Socket handler
